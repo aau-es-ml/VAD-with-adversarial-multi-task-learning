@@ -2,7 +2,7 @@
 ## Description
 This repository contains the code used to generate the results on the AURORA2 database from the work presented in ```Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay```. The work is built upon the work in ```Waveform-based Voice Activity Detection Exploiting Fully Convolutional networks with Multi-Branched Encoders```
 
-The code is split into files accordingly:
+The code is split into modules accordingly:
 
 * ```main.py``` The main file of the code. All the other modules are run from this
 * ```training.py``` The module responsible for training of the model

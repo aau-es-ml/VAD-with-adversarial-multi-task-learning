@@ -21,9 +21,11 @@ The code is split into files accordingly:
 * numpy
 * matplitlib.pyplot
 
+The AURORA2 database
 ### Executing program
 run ```python main.py```
 
+Before executing the program you will have to change the paths to the AURORA2 database in ```config.py```
 ## Citations
 Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay
 

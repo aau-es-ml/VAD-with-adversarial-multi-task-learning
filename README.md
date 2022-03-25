@@ -1,6 +1,6 @@
 # VAD-with-adversarial-multi-task-learning
 ## Description
-This repository contains the code used to generate the results on the AURORA2 database from the work presented in [1]. The work is built upon the work in [2].
+This repository contains the code used to train a noise-robust VAD using adversarial multi-task learning based as presented in [1]. The work is built upon the framework in [2].
 
 The code is split into modules accordingly:
 

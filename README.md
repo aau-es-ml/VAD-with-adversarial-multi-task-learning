@@ -1,6 +1,6 @@
 # VAD-with-adversarial-multi-task-learning
 ## Description
-This repository contains the code used to generate the results on the AURORA2 database from the work presented in ```Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay```. The work is built upon the work in ```Waveform-based Voice Activity Detection Exploiting Fully Convolutional networks with Multi-Branched Encoders```
+This repository contains the code used to generate the results on the AURORA2 database from the work presented in [1]. The work is built upon the work in [2].
 
 The code is split into modules accordingly:
 
@@ -12,6 +12,7 @@ The code is split into modules accordingly:
 * ```model_file.py``` The module in which the model is defined
 * ```config.py``` The module in which global variables are initialised. From here the learning rate, kernel sizes etc. can be changed.
 
+Additionally, the true labels for the TIMIT database is given
 
 ### Dependencies
 **Python modules**:
@@ -27,8 +28,8 @@ run ```python main.py```
 
 Before executing the program you will have to change the paths to the AURORA2 database in ```config.py```. The VAD labels can be downloaded from https://github.com/zhenghuatan/rVAD
 ## Citations
-Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay
+[1] Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay
 
-Yu, Cheng & Hung, Kuo-Hsuan & Lin, I-Fan & Fu, Szu-Wei & Tsao, Yu & Hung, Jeih-weih. (2020). Waveform-based Voice Activity Detection Exploiting Fully Convolutional networks with Multi-Branched Encoders. 
+[2] Yu, Cheng & Hung, Kuo-Hsuan & Lin, I-Fan & Fu, Szu-Wei & Tsao, Yu & Hung, Jeih-weih. (2020). Waveform-based Voice Activity Detection Exploiting Fully Convolutional networks with Multi-Branched Encoders. 
 
 

@@ -12,7 +12,7 @@ The code is split into modules accordingly:
 * ```model_file.py``` The module in which the model is defined
 * ```config.py``` The module in which global variables are initialised. From here the learning rate, kernel sizes etc. can be changed.
 
-Additionally, the ground truth VAD labels for the TIMIT database is given in this repository.
+Additionally, the ground truth VAD labels for the TIMIT database is generated using the .WRD files and given in this repository.
 
 ### Dependencies
 **Python modules**:

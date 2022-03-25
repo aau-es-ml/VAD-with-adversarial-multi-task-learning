@@ -28,7 +28,7 @@ run ```python main.py```
 
 Before executing the program you will have to change the paths to the AURORA2 database in ```config.py```. The VAD labels can be downloaded from https://github.com/zhenghuatan/rVAD
 ## Citations
-[1] Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay
+[1] C.M. Larsen, P. Koch, Z. Tan, Adversarial Multi-Task Deep Learning for Noise-Robust Voice Activity Detection with Low Algorithmic Delay, _Manuscript_
 
 [2] Yu, Cheng & Hung, Kuo-Hsuan & Lin, I-Fan & Fu, Szu-Wei & Tsao, Yu & Hung, Jeih-weih. (2020). Waveform-based Voice Activity Detection Exploiting Fully Convolutional networks with Multi-Branched Encoders. 
 

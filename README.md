@@ -12,7 +12,7 @@ The code is split into modules accordingly:
 * ```model_file.py``` The module in which the model is defined
 * ```config.py``` The module in which global variables are initialised. From here the learning rate, kernel sizes etc. can be changed.
 
-Additionally, the true labels for the TIMIT database is given
+Additionally, the true labels for the TIMIT database [3] is given
 
 ### Dependencies
 **Python modules**:
@@ -22,7 +22,7 @@ Additionally, the true labels for the TIMIT database is given
 * numpy
 * matplitlib.pyplot
 
-The AURORA2 database [3]
+The AURORA2 database [4]
 ### Executing program
 run ```python main.py```
 
@@ -33,4 +33,8 @@ Before executing the program you will have to change the paths to the AURORA2 da
 [2] Yu, Cheng & Hung, Kuo-Hsuan & Lin, I-Fan & Fu, Szu-Wei & Tsao, Yu & Hung, Jeih-weih. (2020). Waveform-based Voice Activity Detection Exploiting Fully Convolutional networks with Multi-Branched Encoders. 
 
 [3] D. Pearce and H.-G. Hirsch, “The aurora experimental framework for the performance evaluations of speech recognition systems under noisy condition,” vol. 4, 01 2000, pp. 29–32
+
+[4] D. Pearce and H.-G. Hirsch, “The aurora experimental framework for the performance evaluations of speech recognition systems under noisy condition,” vol. 4, 01 2000, pp. 29–32
+
+
 

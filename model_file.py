@@ -88,8 +88,6 @@ class VAD_model(nn.Module):
         x = self.relu4(x)
         x = self.drop4(x)
         
-        x=torch.nn.functional.normalize(x,dim=2) # Normalise before the sigmoid layers
-
         x = self.FB(x)
         x = self.sigmoid1(x)
 

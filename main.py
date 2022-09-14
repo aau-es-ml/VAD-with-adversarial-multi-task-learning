@@ -11,7 +11,6 @@ import file_management
 
 
 def run_train(t):
-    config.training_results_AUC["alpha"].append(config.AN_weight)
     print(f"Epoch {t+1}\n--------------TRAIN-----------------")
     config.VAD.train()
     dataset_train = AURORA2_train() # Creates an instance of the dataloader class of the training set
@@ -54,7 +53,7 @@ def run_test(t):
             dataset_test = AURORA2_test() # Creates an instance of the dataloader class of the testing split
             test_loader = DataLoader(dataset_test, batch_size=1, shuffle=False) # The data is not shuffled and thus the order is kept the same every time
             testing.testing_loop(test_loader, t) # The main testing loop
-    file_management.save_results_AUC(config.training_results_AUC)
+    file_management.save_results_AUC(config.training_results_AUC, t)
     
 
 def count_parameters(model):
@@ -63,23 +62,19 @@ def count_parameters(model):
 
 
 if __name__ == "__main__":
-
+    
     # file_management.load_model() # Include this if you wish to load a pretrained model
     # file_management.save_model_initial(config.WVAD_model) # Include this if you wish to save the randomly initiated model
-    print(f"Parameters in model: {count_parameters(config.VAD)}")
     epochs = config.training_epochs
     
     """ Training loop including test of accuracy on validation set after each epoch"""
     for t in range(epochs):
+
         run_train(t)
         run_validation(t)
-        
-       
         file_management.save_results(config.training_results_big, t)
         file_management.save_model(config.VAD, t)
-    
     run_test(t)
 
-   
     print("Done!")
 # 

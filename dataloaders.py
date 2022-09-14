@@ -5,7 +5,6 @@ File for loading data from the correct folders into the model
 import numpy as np
 import glob
 from torch.utils.data import Dataset
-import os
 import config
 
 
@@ -32,24 +31,43 @@ def get_element_train(idx, data, train = 0):
     
     data_tensor = []
     label_tensor = []
-
-    noise_type = np.random.randint(0,19)
-
-    data_path, label_path = data[idx]
-    data_tensor.append(np.fromfile(data_path,dtype='>i2'))
-    label_tensor.append(np.fromfile(label_path,sep="\n"))
+    if config.noise_flag:
+        data_path, label_path = data[idx]
+        data_tensor.append(np.fromfile(data_path,dtype='>i2'))
+        label_tensor.append(np.fromfile(label_path,sep="\n"))
+        
+        indices_backslash = [i for i, ltr in enumerate(data_path) if ltr == '\\']
     
-    indices_backslash = [i for i, ltr in enumerate(data_path) if ltr == '\\']
-
-    noise_type = data_path[indices_backslash[-2]+1:indices_backslash[-2]+3]
-    data_tensor[-1] = data_tensor[-1][0:len(label_tensor[-1])*80]
-    x = np.zeros((1,1,sum(len(item) for item in data_tensor)))
-    y = np.zeros((sum(len(item) for item in label_tensor)))
-    for i in range(1):
+        noise_type = data_path[indices_backslash[-2]+1:indices_backslash[-2]+3]
+        SNR = data_path[indices_backslash[-2]+1:indices_backslash[-1]]
+        data_tensor[-1] = data_tensor[-1][0:len(label_tensor[-1])*80]
+        x = np.zeros((1,1,sum(len(item) for item in data_tensor)))
+        y = np.zeros((sum(len(item) for item in label_tensor)))
         x[0,0,:] = np.hstack(data_tensor)
         y = np.hstack(label_tensor)  
-    
-    return x, y, noise_type
+        
+        return x, y, noise_type, SNR
+    else:
+        while(1):
+            # noise_type = np.random.randint(0,19)
+            data_path, label_path = data[idx]
+            
+            
+            indices_backslash = [i for i, ltr in enumerate(data_path) if ltr == '\\']
+            SNR = data_path[indices_backslash[-2]+1:indices_backslash[-1]]
+            noise_type = data_path[indices_backslash[-2]+1:indices_backslash[-2]+3]
+            if SNR == config.noiseT[0] or SNR[0:-1] == config.noiseT[0][0:-1]:
+                data_tensor.append(np.fromfile(data_path,dtype='>i2'))
+                label_tensor.append(np.fromfile(label_path,sep="\n"))
+                data_tensor[-1] = data_tensor[-1][0:len(label_tensor[-1])*80]
+                x = np.zeros((1,1,sum(len(item) for item in data_tensor)))
+                y = np.zeros((sum(len(item) for item in label_tensor)))
+                x[0,0,:] = np.hstack(data_tensor)
+                y = np.hstack(label_tensor)  
+            
+                return x, y, noise_type, SNR
+            else:
+                idx = np.random.randint(0,8439)
 
 def get_paths_train(SNR, train = 0, noise_type = "string"):
     """
@@ -118,7 +136,6 @@ class AURORA2_test(Dataset):
             folders = f"CLEA{config.noise_type_AURORA}"
         else:
             folders = f"{config.noise_type_AURORA}_SNR{config.SNR_level_AURORA}"
-            
         """ Finds the paths for all the desired speech files"""
         folders_data = glob.glob(data_folder_path + f"\{folders}*")
         data_file_list = []

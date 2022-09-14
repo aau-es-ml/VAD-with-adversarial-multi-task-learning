@@ -88,7 +88,7 @@ def back_propagation_full(loss, t):
     config.optimizer_DN3.step()
           
 
-def after_batches(batch_size, accumulated_accuracy, loss_acc, batch, loss, loss_AN, X, accuracy, size):
+def after_batches(batch_size, accumulated_accuracy, loss_acc, batch, loss, loss_AN, X, accuracy, size, loss_L2):
     """
     Prints various information in the console after each backward step
     """
@@ -99,6 +99,7 @@ def after_batches(batch_size, accumulated_accuracy, loss_acc, batch, loss, loss_
     print(f"Current file/Number of files: [{current+1:>5d}/{size:>5d}]")
     print(f"loss VAD: {loss_acc:>7f}")
     print(f"Loss DN: {loss_AN}")
+    print(f"Loss L: {loss_L2}")
     print(f"Accuracy of batch: {accumulated_accuracy*100:>4f}")
     print(f"Learning rate: {config.learning_rate:>4f}\n")
     
@@ -109,6 +110,7 @@ def calc_accuracy(pred, y):
     """
     labs = (pred[:,0,0]>pred[:,1,0]).to('cpu').detach().numpy()
     y = y[:,0:len(labs)]
+    labs = labs[0:len(y[0,:])]
     accuracy = 1-sum((abs(labs-y[0,:].to('cpu').detach().numpy())))/len(y[0,:].to('cpu').detach().numpy())
     return accuracy, labs
     
@@ -148,8 +150,11 @@ def train_loop(train_data_loader, t):
     concat_X = torch.empty((1,1,1,0), device = config.device)
     concat_y = torch.empty((1,0), device = config.device)
     concat_noise = torch.empty((1,0), device = config.device)
-    
-    for batch, (X, y, noise_true) in enumerate(train_data_loader):
+    bcounter = 0
+    for batch, (X, y, noise_true, SNR) in enumerate(train_data_loader):
+        config.noiseT = SNR
+        config.noise_flag = 0
+        # print(f"NOISE: {noise_true}   SNR: {SNR} \n")
         
         """Initialise the loss if it is not already"""
         try:
@@ -178,8 +183,10 @@ def train_loop(train_data_loader, t):
             
         """The main training loop. Runs after sufficient files are concatenated"""
         if batch > last_batch + concats:
+            bcounter +=1 
+            config.noise_flag = 1
             last_batch = batch # Counter variable
-            
+            # config.noiseT = np.random.randint(0,19)
             """Stores the data in original variable names and resets the tensors containing the concatenated files"""
             X = concat_X
             y = concat_y
@@ -189,17 +196,26 @@ def train_loop(train_data_loader, t):
             concat_y = torch.empty((1,0), device = config.device)
             concat_noise = torch.empty((1,0), device = config.device)
             
+            
             """Forward step"""
             pred_DB, pred_AN = config.VAD(X[0,:,:,:].float(), training=1)
     
+            # nl = len(pred_AN[0,0,:])-len(noise[0,:])
+            # noise_cat = (torch.ones(1,nl).to(config.device)+noise[0][-1]-1)
+            # noise = torch.cat((noise, noise_cat),1)
+    
             loss_DB = calc_loss(y,pred_DB)
-            loss_AN = calc_loss_noisetypes(noise[:,0:len(pred_AN[0,0,:])], pred_AN[0,:,:])
+            loss_AN = calc_loss_noisetypes(noise[:,0:len(pred_AN[0,0,:])], pred_AN[0,:,0:len(noise[0,:])])
 
+            
+            l2_penalty = config.l2_weight * sum([(p**2).sum() for p in config.VAD.parameters() if p.requires_grad])
+            l1_penalty = config.l2_weight * sum([(abs(p)).sum() for p in config.VAD.parameters() if p.requires_grad])
             """Variables storing the accumulated losses"""
             total_loss_DB += loss_DB.item() # Accumulated loss over full training epoch
             loss_acc += loss_DB.item()      # Accumulated loss between backward steps
             loss_AN_acc += loss_AN.item()
-            comb_loss += (1*loss_DB - config.AN_weight*loss_AN)  # Accumulated combined loss of VAD and noise - including the computational graph
+
+            comb_loss += (1*loss_DB - config.AN_weight*loss_AN + l2_penalty)  # Accumulated combined loss of VAD and noise - including the computational graph
             
             """Calculates the predicted VAD labels and returns the accuracy"""
             accuracy, labs = calc_accuracy(pred_DB.T, y)
@@ -207,12 +223,13 @@ def train_loop(train_data_loader, t):
             total_acc += accuracy
             
             """Backward step"""
-            if (batch+1) % config.training_batch_size == 0 and batch != 0:
+            if bcounter == config.training_batch_size:
+                bcounter = 0
                 comb_loss = comb_loss/config.training_batch_size # Finding the mean of the loss
                 back_propagation_full(comb_loss, t) # Performs the backpropagation and optimisation step
 
-                after_batches(config.training_batch_size, accumulated_accuracy, loss_acc, batch, loss_DB, loss_AN_acc, X, accuracy, size) # Prints information about the latest forward step to the console. Comment to keep the console clean
-                # make_plots(pred_DB.T, X, y, labs) # Plots the waveform, channel scores, predictions and true VAD labels from latest forward step
+                after_batches(config.training_batch_size, accumulated_accuracy, loss_acc, batch, loss_DB, loss_AN_acc, X, accuracy, size, l2_penalty) # Prints information about the latest forward step to the console. Comment to keep the console clean
+                # make_plots(pred_DB.T.to('cpu').detach().numpy(), X, y, labs) # Plots the waveform, channel scores, predictions and true VAD labels from latest forward step
                 
                 """Resets variables"""
                 loss_acc = 0

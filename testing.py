@@ -4,8 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import config
-from config import device
-
+from training import calc_loss, calc_loss_noisetypes
 
 
     
@@ -49,16 +48,16 @@ def validation_loop(test_data_loader, t):
     concats = config.concatenates
     
     """ Initialises empty tensors for the data to be concatenated"""
-    concat_X = torch.empty((1,1,1,0), device = device)
-    concat_y = torch.empty((1,0), device = device)
+    concat_X = torch.empty((1,1,1,0), device = config.device)
+    concat_y = torch.empty((1,0), device = config.device)
     
     """Initialises variables to store information about predictions"""
     TP_acc = 0; FP_acc = 0; TN_acc = 0; FN_acc = 0;
     times = 0
     files = 0
     for batch, (X, y) in enumerate(test_data_loader):
-        y = y.to(device)
-        X = X.to(device)
+        y = y.to(config.device)
+        X = X.to(config.device)
         
         """Makes sure the length of y and X corresponds"""
         y_length = np.floor(len(X[0,0,0,:])/80)
@@ -79,8 +78,8 @@ def validation_loop(test_data_loader, t):
                 X = concat_X
                 y = concat_y
                 
-                concat_X = torch.empty((1,1,1,0), device = device)
-                concat_y = torch.empty((1,0), device = device)
+                concat_X = torch.empty((1,1,1,0), device = config.device)
+                concat_y = torch.empty((1,0), device = config.device)
                 
                 """Forward step"""
                 pred, placeholder = config.VAD(X[0,:,:,:].float())
@@ -124,21 +123,21 @@ def validation_loop(test_data_loader, t):
 
 def testing_loop(test_data_loader, t):
     """Variable initialisations"""
-    ROC_samples = 201 # The number of points in the ROC curve
+    ROC_samples = 51 # The number of points in the ROC curve
     last_batch = 0
     concats = config.concatenates
-    concat_X = torch.empty((1,1,1,0), device = device)
-    concat_y = torch.empty((1,0), device = device)
+    concat_X = torch.empty((1,1,1,0), device = config.device)
+    concat_y = torch.empty((1,0), device = config.device)
     TP_acc = np.zeros((ROC_samples,))
     FP_acc = np.zeros((ROC_samples,))
     TN_acc = np.zeros((ROC_samples,))
     FN_acc = np.zeros((ROC_samples,))
     accumulated_acc = np.zeros((ROC_samples,))
     files = 0
-    
+    loss = 0
     for batch, (X, y) in enumerate(test_data_loader):
-        y = y.to(device)
-        X = X.to(device)
+        y = y.to(config.device)
+        X = X.to(config.device)
         
         """Makes sure the length of y and X corresponds"""
         y_length = np.floor(len(X[0,0,0,:])/80)
@@ -160,13 +159,17 @@ def testing_loop(test_data_loader, t):
                 X = concat_X
                 y = concat_y
                 
-                concat_X = torch.empty((1,1,1,0), device = device)
-                concat_y = torch.empty((1,0), device = device)
+                concat_X = torch.empty((1,1,1,0), device = config.device)
+                concat_y = torch.empty((1,0), device = config.device)
                 
                 """Forward step"""
                 pred, placeholder = config.VAD(X[0,:,:,:].float())
                 labs = []
                 acc = []
+                
+                loss_DB = calc_loss(y,pred)
+                loss += loss_DB.item()
+                del loss_DB
                 
                 """Sweeps over the the scores of speech and non-speech channels using different thresholds and generates predictions"""
                 for index, (threshold) in enumerate(np.linspace(-1,1,ROC_samples)):
@@ -197,6 +200,7 @@ def testing_loop(test_data_loader, t):
                         config.training_results_AUC[f"{dict_key_PN}_TP"] = (TP_acc/total_samples)
                         config.training_results_AUC[f"{dict_key_PN}_FP"] = (FP_acc/total_samples)
                         config.training_results_AUC[f"{dict_key_PN}_TN"] = (TN_acc/total_samples)
-                        config.training_results_AUC[f"{dict_key_PN}_FN"] = (FN_acc/total_samples)                           
+                        config.training_results_AUC[f"{dict_key_PN}_FN"] = (FN_acc/total_samples)              
+                        config.training_results_AUC[f"{dict_key_PN}_loss_VAD"] = loss                       
                         return
     

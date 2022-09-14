@@ -8,24 +8,25 @@ from model_file import VAD_model
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print("Using {} device".format(device))
 # %% The variables in this cell can be customised
-learning_rate = 1e-2 # Learning rate for the EB, FB and DB layers
-learning_rate_DN = 1e-3 # Learning rate for the discriminative network
+learning_rate = 100e-4 # Learning rate for the EB, FB and DB layers
+learning_rate_DN = 1e-5 # Learning rate for the discriminative network
 LR_factor = 0.7 # The factor with which to decrease the learning rate after each epoch
+wd = 0.0
 
-training_epochs = 30 # The number of epochs during training
+training_epochs = 20 # The number of epochs during training
 concatenates = 10 # The number of files to concatenate
 training_batch_size = 3  # The number of forward steps per backward step. Multiplied with "concatenates" this is the mini-batch size
-testing_batch_size = 650 # The number of files in the testing split. Validation split is half of this
+testing_batch_size = 200 # The number of files in the testing split. Validation split is half of this
 files_per_epoch = 8400
-AN_weight = 0.1 # The scalar referred to as "alpha" in the paper
-
-output_folder = "Enter your folder name here" # The name of the folder in which to store the results and models
+AN_weight = 0 # The scalar referred to as "alpha" in the paper
+output_folder = "your output folder" # The name of the folder in which to store the results and models
 
 training_data_path = r"your path\aurora2\SPEECHDATA\\TRAIN"
 training_label_path = r"your path\Aurora2TrainSet-ReferenceVAD"
 
 testing_data_path = r"your path\aurora2\SPEECHDATA\TESTB"
 testing_label_path = r"your path\Aurora2TestSet-ReferenceVAD\\"
+dset = "A"
 
 """Kernel sizes"""
 k_EB1 = 55
@@ -43,6 +44,8 @@ k_DN1 = 55
 k_DN2 = 15
 k_DN3 = 5
 
+noiseT = 1
+noise_flag = 1
 # %%
 training = 0 # Flag denoting whether the model is being trained or tested
 validation = 0 # Flag denoting whether to use the testing or validation split
@@ -52,9 +55,11 @@ loss_primary = nn.BCELoss()
 loss_secondary = nn.CrossEntropyLoss()
 
 # Make an instance of the model
+# oldm = old().to(device)
 VAD = VAD_model().to(device)
 
 """ Initialize the optimisers"""
+
 optimizer_EB1 = torch.optim.RMSprop(VAD.EB1.parameters(), lr=learning_rate)
 optimizer_EB2 = torch.optim.RMSprop(VAD.EB2.parameters(), lr=learning_rate)
 optimizer_EB3 = torch.optim.RMSprop(VAD.EB3.parameters(), lr=learning_rate)
@@ -62,15 +67,13 @@ optimizer_EB4 = torch.optim.RMSprop(VAD.EB4.parameters(), lr=learning_rate)
 
 optimizer_FB = torch.optim.RMSprop(VAD.FB.parameters(), lr=learning_rate)
 
-optimizer_DN1 = torch.optim.RMSprop(VAD.DN1.parameters(), lr=learning_rate_DN)
-optimizer_DN2 = torch.optim.RMSprop(VAD.DN2.parameters(), lr=learning_rate_DN)
-optimizer_DN3 = torch.optim.RMSprop(VAD.DN3.parameters(), lr=learning_rate_DN)
+optimizer_DN1 = torch.optim.RMSprop(VAD.AN1.parameters(), lr=learning_rate_DN)
+optimizer_DN2 = torch.optim.RMSprop(VAD.AN2.parameters(), lr=learning_rate_DN)
+optimizer_DN3 = torch.optim.RMSprop(VAD.AN3.parameters(), lr=learning_rate_DN)
 
 optimizer_DB1 = torch.optim.RMSprop(VAD.DB1.parameters(), lr=learning_rate)
 optimizer_DB2 = torch.optim.RMSprop(VAD.DB2.parameters(), lr=learning_rate)
 optimizer_DB3 = torch.optim.RMSprop(VAD.DB3.parameters(), lr=learning_rate)
-
-
 
 
 noise_type_AURORA = "caf"
@@ -328,7 +331,38 @@ training_results_AUC = {
     
     "time_passed" : [],
     "threshold" : [],
-    "alpha" : []
+    "alpha" : [],
+    "N1_-5_loss_VAD" : [],
+    "N1_0_loss_VAD" : [],
+    "N1_5_loss_VAD" : [],
+    "N1_10_loss_VAD" : [],
+    "N1_15_loss_VAD" : [],
+    "N1_20_loss_VAD" : [],
+    "N1_CLEA_loss_VAD" : [],
+    
+    "N2_-5_loss_VAD" : [],
+    "N2_0_loss_VAD" : [],
+    "N2_5_loss_VAD" : [],
+    "N2_10_loss_VAD" : [],
+    "N2_15_loss_VAD" : [],
+    "N2_20_loss_VAD" : [],
+    "N2_CLEA_loss_VAD" : [],
+    
+    "N3_-5_loss_VAD" : [],
+    "N3_0_loss_VAD" : [],
+    "N3_5_loss_VAD" : [],
+    "N3_10_loss_VAD" : [],
+    "N3_15_loss_VAD" : [],
+    "N3_20_loss_VAD" : [],
+    "N3_CLEA_loss_VAD" : [],
+    
+    "N4_-5_loss_VAD" : [],
+    "N4_0_loss_VAD" : [],
+    "N4_5_loss_VAD" : [],
+    "N4_10_loss_VAD" : [],
+    "N4_15_loss_VAD" : [],
+    "N4_20_loss_VAD" : [],
+    "N4_CLEA_loss_VAD" : []
     }
 
 
